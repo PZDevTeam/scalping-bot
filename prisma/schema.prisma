@@ -14,16 +14,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Operations {
-  id              Int      @id @default(autoincrement())
-  token_mint      String
-  token_name      String 
-  amount          Float
-  usd_price       Float
-  total_value     Float
-  opetation       String
-  pool_id         String
-  dex             String
-  slot            BigInt
-  created_at       DateTime @default(now())
+model Operation {
+  id          Int      @id @default(autoincrement())
+  token_mint  String
+  token_name  String 
+  amount      Float
+  usd_price   Float
+  total_value Float
+  operation   String
+  pool_id     String
+  dex         String
+  slot        BigInt
+  created_at  DateTime @default(now())
+  
+  @@map("operation") 
+  @@index([token_mint])
+  @@index([pool_id])
+  @@index([dex])
+  @@index([created_at])
 }

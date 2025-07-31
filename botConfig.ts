@@ -1,36 +1,22 @@
 const config = {
   // poolPublicKeyStr: 'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK',
-  poolPublicKeyStr: 'EZVkeboWeXygtq8LMyENHyXdF5wpYrtExRNH9UwB1qYw',
+  watchPools: [
+    {
+      poolId: '3ucNos4NbumPLZNWztqGHNFFgkHeRMBQAVemeeomsUxv',
+      dex: 'Radium',
+      token1: {
+        name: 'WSOL',
+        mint: 'So11111111111111111111111111111111111111112',
+      },
+      token2: {
+        name: 'USDC',
+        mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+      },
+    },
+  ],
   mockDepositAmount: 100,
   skipDifferenceDuration: 10,
   targetSwap: 'So11111111111111111111111111111111111111112',
-  watchBy: [
-    {
-      name: 'Bonk',
-      mint: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
-      price: 0.004614779,
-    },
-    {
-      name: 'dogwifhat',
-      mint: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',
-      price: 1.06348,
-    },
-    {
-      name: 'Render',
-      mint: 'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',
-      price: 0.26566497,
-    },
-    {
-      name: 'Jupiter',
-      mint: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
-      price: 1.937239,
-    },
-    {
-      name: 'Jito Staked SOL (JITOSOL)',
-      mint: 'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
-      price: 0.004614779,
-    },
-  ],
 };
 
 export { config };
@@ -40,4 +26,4 @@ export { config };
 // Render - rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof
 // Jupiter - JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN
 // Jito Staked SOL (JITOSOL) - J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn
-// 
+//

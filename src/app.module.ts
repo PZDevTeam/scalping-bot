@@ -1,22 +1,14 @@
-import { Module, OnModuleInit, Injectable } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { OrderBook } from './scalpingBot/main';
-
-const scalpingBotService = new OrderBook();
-
-@Injectable()
-class ScalpingBotService implements OnModuleInit {
-  async onModuleInit() {
-    await scalpingBotService.subscribe();
-    // Запуск бота при старте приложения
-    // startScalpingBot(config.poolPublicKeyStr);
-  }
-}
+import { ScalpingBotService } from './ScalpingBot/scalpingbot.service';
+// import { PrismaService } from './prisma.service';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [],
+  imports: [ScheduleModule.forRoot()],
   controllers: [AppController],
   providers: [AppService, ScalpingBotService],
+  exports: [],
 })
 export class AppModule {}
