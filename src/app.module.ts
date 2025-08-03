@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ScalpingBotService } from './ScalpingBot/scalpingbot.service';
-// import { PrismaService } from './prisma.service';
 import { ScheduleModule } from '@nestjs/schedule';
+import { PrismaModule } from './prisma/prisma.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [ScheduleModule.forRoot()],
+  imports: [ConfigModule.forRoot(), PrismaModule, ScheduleModule.forRoot()],
   controllers: [AppController],
-  providers: [AppService, ScalpingBotService],
+  providers: [ScalpingBotService],
   exports: [],
 })
 export class AppModule {}

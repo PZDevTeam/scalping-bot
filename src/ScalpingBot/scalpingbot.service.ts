@@ -18,12 +18,13 @@ class ScalpingBotService implements OnModuleInit {
     // startScalpingBot(config.poolPublicKeyStr);
   }
 
-  @Cron(CronExpression.EVERY_10_HOURS)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   saveBatch() {
-    console.log('in batch');
-    // const pkg = scalpingBotService.packageSend();
+    const pkg = scalpingBotService.packageSend();
 
-    // const summary = pkg['3ucNos4NbumPLZNWztqGHNFFgkHeRMBQAVemeeomsUxv'].SUMMARY;
+    const summary = pkg['3ucNos4NbumPLZNWztqGHNFFgkHeRMBQAVemeeomsUxv'].SUMMARY;
+
+    console.log(pkg);
 
     // const last = summary[summary.length - 1];
 
