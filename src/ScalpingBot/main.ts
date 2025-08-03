@@ -17,7 +17,7 @@ type Operation = {
   exchange_rate: number;
   dex: string;
   slot: number;
-  created_at: number;
+  created_at: Date;
   pool_id: string;
   operation_type: string;
 };
@@ -91,15 +91,15 @@ class OrderBook {
           const key = `${receiptMintData.accountIndex}_${receiptMintData.mint}`;
           preBalances.set(key, {
             targetMint: targetMintData.mint,
-            targetTokenName: targetPool?.token1,
+            targetTokenName: targetPool?.token1.name,
             receiptMint: receiptMintData.mint,
-            receiptTokenName: targetPool?.token2,
+            receiptTokenName: targetPool?.token2.name,
             poolId: targetPool.poolId,
             accountIndex: receiptMintData.accountIndex,
             targetAmount: targetMintData.uiTokenAmount?.uiAmount,
             receiptAmount: receiptMintData.uiTokenAmount?.uiAmount || 0,
             owner: receiptMintData.owner,
-            slot: data.slot,
+            slot: +data.transaction.slot,
           });
         }
       });
@@ -130,15 +130,15 @@ class OrderBook {
           const key = `${receiptMintData.accountIndex}_${receiptMintData.mint}`;
           postBalances.set(key, {
             targetMint: targetMintData.mint,
-            targetTokenName: targetPool?.token1,
+            targetTokenName: targetPool?.token1.name,
             receiptMint: receiptMintData.mint,
-            receiptTokenName: targetPool?.token2,
+            receiptTokenName: targetPool?.token2.name,
             poolId: targetPool.poolId,
             accountIndex: receiptMintData.accountIndex,
             targetAmount: targetMintData.uiTokenAmount?.uiAmount,
             receiptAmount: receiptMintData.uiTokenAmount?.uiAmount || 0,
             owner: receiptMintData.owner,
-            slot: data.slot,
+            slot: +data.transaction.slot,
           });
         }
       });
@@ -211,7 +211,8 @@ class OrderBook {
             //   `Current price: 1 ${targetPool.token1.name}/${targetPool.token2.name} = ${price} WSOL (${postBalance.mint})`,
             // );
 
-            // console.log(price, 'price');
+            console.log(price, 'price');
+            console.log(amountDiff, 'amountDiff');
             // Покупка: Покупаем token2  за token1
             const order: Operation = {
               receipt_token_mint: postBalance.targetMint,
@@ -226,9 +227,9 @@ class OrderBook {
               exchange_rate: price || 0,
               dex: targetPool.dex,
               slot: postBalance.slot,
-              created_at: Date.now(),
+              created_at: new Date(),
               pool_id: targetPool.poolId,
-              operation_type: amountDiff > 0 ? 'BUY' : 'SELL',
+              operation_type: amountDiff < 0 ? 'BUY' : 'SELL',
             };
 
             if (amountDiff > 0) {
