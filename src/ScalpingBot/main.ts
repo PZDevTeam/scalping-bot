@@ -150,8 +150,7 @@ class OrderBook {
 
         // console.log(postBalance, 'diff');
         if (postBalance) {
-          const amountDiff =
-            postBalance.receiptAmount - preBalance.receiptAmount;
+          const amountDiff = postBalance.targetAmount - preBalance.targetAmount;
           const absDiff = Math.abs(amountDiff);
 
           if (absDiff >= config.skipDifferenceDuration) {
@@ -173,7 +172,8 @@ class OrderBook {
 
             // if (!preWsolBalance || !postWsolBalance) continue;
 
-            const wsolDiff = postBalance.targetAmount - preBalance.targetAmount;
+            const wsolDiff =
+              postBalance.receiptAmount - preBalance.receiptAmount;
 
             // Рассчитываем курс
             let price;
@@ -187,23 +187,6 @@ class OrderBook {
               // Непонятная операция, пропускаем
               continue;
             }
-
-            const pricingDiffs = preTokenBalances.map(
-              (balance: any, idx, array) => {
-                const postBalances = postTokenBalances.find(
-                  (el: any) =>
-                    el.accountIndex === balance.accountIndex &&
-                    el.mint === balance.mint,
-                );
-
-                return {
-                  mint: balance.mint,
-                  diff:
-                    postBalances.uiTokenAmount.uiAmount -
-                    balance.uiTokenAmount.uiAmount,
-                };
-              },
-            );
 
             // console.log(pricingDiffs, 'meta');
 
@@ -229,7 +212,7 @@ class OrderBook {
               slot: postBalance.slot,
               created_at: new Date(),
               pool_id: targetPool.poolId,
-              operation_type: amountDiff < 0 ? 'BUY' : 'SELL',
+              operation_type: amountDiff > 0 ? 'BUY' : 'SELL',
             };
 
             if (amountDiff > 0) {

@@ -31,6 +31,9 @@ model Operation {
   created_at          DateTime @default(now())
   pool_id             String
   operation_type      String
+  candle              Int
+  selected_timeframe  String
+  moving_average      Float
 
   @@map("operation") 
   @@index([receipt_token_mint])

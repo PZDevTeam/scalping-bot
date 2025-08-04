@@ -5,18 +5,21 @@ const config = {
       poolId: '3ucNos4NbumPLZNWztqGHNFFgkHeRMBQAVemeeomsUxv',
       dex: 'Radium',
       token1: {
-        name: 'WSOL',
-        mint: 'So11111111111111111111111111111111111111112',
-      },
-      token2: {
         name: 'USDC',
         mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+      },
+      token2: {
+        name: 'WSOL',
+        mint: 'So11111111111111111111111111111111111111112',
       },
     },
   ],
   mockDepositAmount: 100,
   skipDifferenceDuration: 10,
   targetSwap: 'So11111111111111111111111111111111111111112',
+  openPositionPercent: 5,
+  takeProfit: 2,
+  stopLoss: 0.5,
 };
 
 export { config };
