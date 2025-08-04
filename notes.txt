@@ -1,0 +1,20 @@
+// получение объема покупок и продаж в рамках одной свечи
+SELECT 
+    candle,
+    selected_timeframe,
+    -- Объем покупок (BUY)
+    SUM(CASE WHEN operation_type = 'BUY' THEN target_amount ELSE 0 END) AS total_buy_amount,
+    -- Объем продаж (SELL)
+    SUM(CASE WHEN operation_type = 'SELL' THEN target_amount ELSE 0 END) AS total_sell_amount,
+    -- Чистый объем (BUY - SELL)
+    SUM(CASE WHEN operation_type = 'BUY' THEN target_amount ELSE target_amount END) AS net_amount,
+    -- Количество операций
+    COUNT(*) AS total_operations
+FROM 
+    operation
+WHERE 
+    operation_type IN ('BUY', 'SELL')  -- Только покупки/продажи
+GROUP BY 
+    candle, selected_timeframe
+ORDER BY 
+    candle DESC;

@@ -22,7 +22,7 @@ type Operation = {
   operation_type: string;
 };
 
-type OrderbookItem = {
+export type OrderbookItem = {
   BUY: Operation[];
   SELL: Operation[];
   SUMMARY: Operation[];
@@ -42,217 +42,242 @@ class OrderBook {
   orderBook: Record<string, OrderbookItem> = structuredClone(ORDERBOOK_INIT);
 
   async subscribe() {
-    const client = new Client(
-      'https://solana-yellowstone-grpc.publicnode.com:443',
-      'dc29813f67cb77cc9c6...b3f3f8215c57b3a80f8',
-      {
-        'grpc.max_receive_message_length': 64 * 1024 * 1024,
-      },
-    );
+    try {
+      const client = new Client(
+        'https://solana-yellowstone-grpc.publicnode.com:443',
+        'dc29813f67cb77cc9c6...b3f3f8215c57b3a80f8',
+        {
+          'grpc.max_receive_message_length': 64 * 1024 * 1024,
+        },
+      );
 
-    const stream = await client.subscribe();
+      const stream = await client.subscribe();
 
-    const subscriber = subscribeTransactions(
-      config.watchPools.map((el) => el.poolId),
-    );
+      const subscriber = subscribeTransactions(
+        config.watchPools.map((el) => el.poolId),
+      );
 
-    stream.on('data', (data: any) => {
-      this.priceUpdatMint = null;
-      const meta = data?.transaction?.transaction?.meta;
-      const preTokenBalances = meta?.preTokenBalances || [];
-      const postTokenBalances = meta?.postTokenBalances || [];
+      stream.on('data', (data: any) => {
+        this.priceUpdatMint = null;
+        const meta = data?.transaction?.transaction?.meta;
+        const preTokenBalances = meta?.preTokenBalances || [];
+        const postTokenBalances = meta?.postTokenBalances || [];
 
-      const preBalances = new Map();
-      const postBalances = new Map();
+        const preBalances = new Map();
+        const postBalances = new Map();
 
-      // Заполняем preBalances
-      preTokenBalances.forEach((balance: any, idx, array) => {
-        const targetPool = config.watchPools.find(
-          (item) => item.poolId === balance.owner,
-        );
+        // const checkTokenBalances = postTokenBalances.map((balance) => {
+        //   return balance;
+        // });
 
-        const receiptMint = targetPool?.token1.mint;
-        const targetMint = targetPool?.token2.mint;
+        // console.log(meta?.postBalances, 'checkTokenBalances');
 
-        const targetMintData = array.find(
-          (balance) => balance.mint === targetMint,
-        );
+        // console.log('preTokenBalances', preTokenBalances);
+        // console.log('postBalances', postBalances);
 
-        const receiptMintData =
-          balance.mint === receiptMint ? balance : undefined;
+        // Заполняем preBalances
+        preTokenBalances.forEach((balance: any, idx, array) => {
+          const targetPool = config.watchPools.find(
+            (item) => item.poolId === balance.owner,
+          );
 
-        if (
-          targetPool?.poolId &&
-          targetMintData &&
-          receiptMintData &&
-          targetMintData.uiTokenAmount?.uiAmount > 0 &&
-          receiptMintData?.uiTokenAmount?.uiAmount > 0
-        ) {
-          const key = `${receiptMintData.accountIndex}_${receiptMintData.mint}`;
-          preBalances.set(key, {
-            targetMint: targetMintData.mint,
-            targetTokenName: targetPool?.token1.name,
-            receiptMint: receiptMintData.mint,
-            receiptTokenName: targetPool?.token2.name,
-            poolId: targetPool.poolId,
-            accountIndex: receiptMintData.accountIndex,
-            targetAmount: targetMintData.uiTokenAmount?.uiAmount,
-            receiptAmount: receiptMintData.uiTokenAmount?.uiAmount || 0,
-            owner: receiptMintData.owner,
-            slot: +data.transaction.slot,
-          });
-        }
-      });
+          const receiptMint = targetPool?.token1.mint;
+          const targetMint = targetPool?.token2.mint;
 
-      // Заполняем postBalances
-      postTokenBalances.forEach((balance: any, idx, array) => {
-        const targetPool = config.watchPools.find(
-          (item) => item.poolId === balance.owner,
-        );
+          const targetMintData = array.find(
+            (balance) => balance.mint === targetMint,
+          );
 
-        const receiptMint = targetPool?.token1.mint;
-        const targetMint = targetPool?.token2.mint;
+          const receiptMintData =
+            balance.mint === receiptMint ? balance : undefined;
 
-        const targetMintData = array.find(
-          (balance) => balance.mint === targetMint,
-        );
+          if (
+            targetPool?.poolId &&
+            targetMintData &&
+            receiptMintData &&
+            targetMintData.uiTokenAmount?.uiAmount > 0 &&
+            receiptMintData?.uiTokenAmount?.uiAmount > 0
+          ) {
+            const key = `${receiptMintData.accountIndex}_${receiptMintData.mint}`;
+            preBalances.set(key, {
+              targetMint: targetMintData.mint,
+              targetTokenName: targetPool?.token1.name,
+              receiptMint: receiptMintData.mint,
+              receiptTokenName: targetPool?.token2.name,
+              poolId: targetPool.poolId,
+              accountIndex: receiptMintData.accountIndex,
+              targetAmount: targetMintData.uiTokenAmount?.uiAmount,
+              receiptAmount: receiptMintData.uiTokenAmount?.uiAmount || 0,
+              owner: receiptMintData.owner,
+              slot: +data.transaction.slot,
+            });
+          }
+        });
 
-        const receiptMintData =
-          balance.mint === receiptMint ? balance : undefined;
+        // Заполняем postBalances
+        postTokenBalances.forEach((balance: any, idx, array) => {
+          const targetPool = config.watchPools.find(
+            (item) => item.poolId === balance.owner,
+          );
 
-        if (
-          targetPool?.poolId &&
-          targetMintData &&
-          receiptMintData &&
-          targetMintData.uiTokenAmount?.uiAmount > 0 &&
-          receiptMintData?.uiTokenAmount?.uiAmount > 0
-        ) {
-          const key = `${receiptMintData.accountIndex}_${receiptMintData.mint}`;
-          postBalances.set(key, {
-            targetMint: targetMintData.mint,
-            targetTokenName: targetPool?.token1.name,
-            receiptMint: receiptMintData.mint,
-            receiptTokenName: targetPool?.token2.name,
-            poolId: targetPool.poolId,
-            accountIndex: receiptMintData.accountIndex,
-            targetAmount: targetMintData.uiTokenAmount?.uiAmount,
-            receiptAmount: receiptMintData.uiTokenAmount?.uiAmount || 0,
-            owner: receiptMintData.owner,
-            slot: +data.transaction.slot,
-          });
-        }
-      });
+          const receiptMint = targetPool?.token1.mint;
+          const targetMint = targetPool?.token2.mint;
 
-      // Обрабатываем изменения
-      // console.log(preBalances, 'target piil');
-      for (const [key, preBalance] of preBalances) {
-        const postBalance = postBalances.get(key);
+          const targetMintData = array.find(
+            (balance) => balance.mint === targetMint,
+          );
 
-        // console.log(postBalance, 'diff');
-        if (postBalance) {
-          const amountDiff = postBalance.targetAmount - preBalance.targetAmount;
-          const absDiff = Math.abs(amountDiff);
+          const receiptMintData =
+            balance.mint === receiptMint ? balance : undefined;
 
-          if (absDiff >= config.skipDifferenceDuration) {
-            // const tokenConfig = config.watchBy.find(
-            //   (item) => item.mint === postBalance.mint,
-            // );
-            const targetPool = config.watchPools.find(
-              (item) =>
-                item.token1.mint === postBalance.targetMint ||
-                item.token2.mint === postBalance.targetMint,
-            );
+          if (
+            targetPool?.poolId &&
+            targetMintData &&
+            receiptMintData &&
+            targetMintData.uiTokenAmount?.uiAmount > 0 &&
+            receiptMintData?.uiTokenAmount?.uiAmount > 0
+          ) {
+            const key = `${receiptMintData.accountIndex}_${receiptMintData.mint}`;
+            postBalances.set(key, {
+              targetMint: targetMintData.mint,
+              targetTokenName: targetPool?.token1.name,
+              receiptMint: receiptMintData.mint,
+              receiptTokenName: targetPool?.token2.name,
+              poolId: targetPool.poolId,
+              accountIndex: receiptMintData.accountIndex,
+              targetAmount: targetMintData.uiTokenAmount?.uiAmount,
+              receiptAmount: receiptMintData.uiTokenAmount?.uiAmount || 0,
+              owner: receiptMintData.owner,
+              slot: +data.transaction.slot,
+            });
+          }
+        });
 
-            if (!targetPool) continue;
+        // Обрабатываем изменения
+        // console.log(preBalances, 'target piil');
+        for (const [key, preBalance] of preBalances) {
+          const postBalance = postBalances.get(key);
 
-            // Находим соответствующий WSOL баланс для этого аккаунта
-            // const wsolKey = `${postBalance.accountIndex}_${config.targetSwap}`;
-            // const preWsolBalance = preBalances.get(wsolKey);
-            // const postWsolBalance = postBalances.get(wsolKey);
+          // console.log(postBalance, 'diff');
+          if (postBalance) {
+            const amountDiff =
+              postBalance.targetAmount - preBalance.targetAmount;
+            const absDiff = Math.abs(amountDiff);
 
-            // if (!preWsolBalance || !postWsolBalance) continue;
+            // console.log(absDiff, 'preBalance');
 
-            const wsolDiff =
-              postBalance.receiptAmount - preBalance.receiptAmount;
+            // console.log(absDiff, 'absDiff', meta.postTokenBalances);
+            const pricingDiffs = meta.postTokenBalances.map((el) => {
+              const getSamePreBalance = meta.preTokenBalances.find(
+                (preEl) => preEl.accountIndex === el.accountIndex,
+              );
+              return {
+                mint: el.mint,
+                amount:
+                  el.uiTokenAmount?.uiAmount -
+                  getSamePreBalance?.uiTokenAmount?.uiAmount,
+              };
+            });
 
-            // Рассчитываем курс
-            let price;
-            if (amountDiff > 0 && wsolDiff < 0) {
-              // Покупаем токен за WSOL (токен увеличился, WSOL уменьшился)
-              price = Math.abs(wsolDiff) / amountDiff; // Сколько WSOL за 1 токен
-            } else if (amountDiff < 0 && wsolDiff > 0) {
-              // Продаем токен за WSOL (токен уменьшился, WSOL увеличился)
-              price = wsolDiff / Math.abs(amountDiff); // Сколько WSOL за 1 токен
-            } else {
-              // Непонятная операция, пропускаем
-              continue;
+            console.log(pricingDiffs, 'pricingDiffs');
+
+            if (absDiff >= config.skipDifferenceDuration) {
+              // const tokenConfig = config.watchBy.find(
+              //   (item) => item.mint === postBalance.mint,
+              // );
+              const targetPool = config.watchPools.find(
+                (item) =>
+                  item.token1.mint === postBalance.receiptMint ||
+                  item.token2.mint === postBalance.targetMint,
+              );
+
+              if (!targetPool) continue;
+
+              const wsolDiff =
+                postBalance.receiptAmount - preBalance.receiptAmount;
+
+              // Рассчитываем курс
+              let price;
+              if (amountDiff > 0 && wsolDiff < 0) {
+                // Покупаем токен за WSOL (токен увеличился, WSOL уменьшился)
+                price = Math.abs(wsolDiff) / amountDiff; // Сколько WSOL за 1 токен
+              } else if (amountDiff < 0 && wsolDiff > 0) {
+                // Продаем токен за WSOL (токен уменьшился, WSOL увеличился)
+                price = wsolDiff / Math.abs(amountDiff); // Сколько WSOL за 1 токен
+              } else {
+                // Непонятная операция, пропускаем
+                continue;
+              }
+
+              // console.log(pricingDiffs, 'meta');
+
+              // console.log(
+              //   `Current price: 1 ${targetPool.token1.name}/${targetPool.token2.name} = ${price} WSOL (${postBalance.mint})`,
+              // );
+
+              // console.log(price, 'price');
+              // console.log(amountDiff, 'amountDiff');
+              // Покупка: Покупаем token2  за token1
+              const order: Operation = {
+                receipt_token_mint: postBalance.targetMint,
+                target_token_mint: postBalance.receiptMint,
+                target_token_name: postBalance.targetTokenName,
+                receipt_token_name: postBalance.receiptTokenName,
+                target_amount:
+                  postBalance.targetAmount - preBalance.targetAmount,
+                receipt_amount:
+                  postBalance.receiptAmount - preBalance.receiptAmount,
+                target_volume: postBalance.targetAmount,
+                receipt_volume: postBalance.receiptAmount,
+                exchange_rate: price || 0,
+                dex: targetPool.dex,
+                slot: postBalance.slot,
+                created_at: new Date(),
+                pool_id: targetPool.poolId,
+                operation_type: amountDiff > 0 ? 'BUY' : 'SELL',
+              };
+
+              if (amountDiff > 0) {
+                // console.log(this.orderBook);
+                this.priceUpdatMint = postBalance.mint;
+                this.orderBook[postBalance.poolId].BUY.push(order);
+                // console.log(this.orderBook);
+              } else {
+                // console.log(this.orderBook);
+                this.priceUpdatMint = postBalance.mint;
+                this.orderBook[postBalance.poolId].SELL.push(order);
+
+                // console.log(this.orderBook);
+              }
+              this.orderBook[postBalance.poolId].SUMMARY.push(order);
+
+              // ... остальная логика добавления в orderBook
             }
-
-            // console.log(pricingDiffs, 'meta');
-
-            // console.log(
-            //   `Current price: 1 ${targetPool.token1.name}/${targetPool.token2.name} = ${price} WSOL (${postBalance.mint})`,
-            // );
-
-            console.log(price, 'price');
-            console.log(amountDiff, 'amountDiff');
-            // Покупка: Покупаем token2  за token1
-            const order: Operation = {
-              receipt_token_mint: postBalance.targetMint,
-              target_token_mint: postBalance.receiptMint,
-              target_token_name: postBalance.targetTokenName,
-              receipt_token_name: postBalance.receiptTokenName,
-              target_amount: postBalance.targetAmount - preBalance.targetAmount,
-              receipt_amount:
-                postBalance.receiptAmount - preBalance.receiptAmount,
-              target_volume: postBalance.targetAmount,
-              receipt_volume: postBalance.receiptAmount,
-              exchange_rate: price || 0,
-              dex: targetPool.dex,
-              slot: postBalance.slot,
-              created_at: new Date(),
-              pool_id: targetPool.poolId,
-              operation_type: amountDiff > 0 ? 'BUY' : 'SELL',
-            };
-
-            if (amountDiff > 0) {
-              // console.log(this.orderBook);
-              this.priceUpdatMint = postBalance.mint;
-              this.orderBook[postBalance.poolId].BUY.push(order);
-              // console.log(this.orderBook);
-            } else {
-              // console.log(this.orderBook);
-              this.priceUpdatMint = postBalance.mint;
-              this.orderBook[postBalance.poolId].SELL.push(order);
-
-              // console.log(this.orderBook);
-            }
-            this.orderBook[postBalance.poolId].SUMMARY.push(order);
-
-            // ... остальная логика добавления в orderBook
           }
         }
-      }
 
-      // if (this.priceUpdatMint && this.orderBook[this.priceUpdatMint]) {
-      //   const name = config.watchBy.find(
-      //     (el) => el.mint === this.priceUpdatMint,
-      //   )?.name;
+        // if (this.priceUpdatMint && this.orderBook[this.priceUpdatMint]) {
+        //   const name = config.watchBy.find(
+        //     (el) => el.mint === this.priceUpdatMint,
+        //   )?.name;
 
-      //   console.log(`=== Order Book for pair ${name}/WSOL ===`);
-      //   console.log('BUY:', (this.orderBook[this.priceUpdatMint] as any).BUY);
-      //   console.log('SELL:', (this.orderBook[this.priceUpdatMint] as any).SELL);
-      //   console.log(
-      //     'SPREAD:',
-      //     (this.orderBook[this.priceUpdatMint] as any).SPREAD,
-      //   );
-      //   console.log('===============================');
-      // }
-    });
+        //   console.log(`=== Order Book for pair ${name}/WSOL ===`);
+        //   console.log('BUY:', (this.orderBook[this.priceUpdatMint] as any).BUY);
+        //   console.log('SELL:', (this.orderBook[this.priceUpdatMint] as any).SELL);
+        //   console.log(
+        //     'SPREAD:',
+        //     (this.orderBook[this.priceUpdatMint] as any).SPREAD,
+        //   );
+        //   console.log('===============================');
+        // }
+      });
 
-    stream.write(subscriber, (err: any) => {
-      if (err) console.error('Subscription error:', err);
-    });
+      stream.write(subscriber, (err: any) => {
+        if (err) console.error('Subscription error:', err);
+      });
+    } catch {
+      this.subscribe();
+    }
   }
 
   packageSend() {

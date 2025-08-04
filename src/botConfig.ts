@@ -13,9 +13,21 @@ const config = {
         mint: 'So11111111111111111111111111111111111111112',
       },
     },
+    {
+      poolId: '5rCf1DM8LjKTw4YqhnoLcngyZYeNnQqztScTogYHAS6',
+      dex: 'Meteora',
+      token1: {
+        name: 'USDC',
+        mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+      },
+      token2: {
+        name: 'WSOL',
+        mint: 'So11111111111111111111111111111111111111112',
+      },
+    },
   ],
   mockDepositAmount: 100,
-  skipDifferenceDuration: 10,
+  skipDifferenceDuration: 2,
   targetSwap: 'So11111111111111111111111111111111111111112',
   openPositionPercent: 5,
   takeProfit: 2,

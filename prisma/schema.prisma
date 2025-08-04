@@ -34,6 +34,7 @@ model Operation {
   candle              Int
   selected_timeframe  String
   moving_average      Float
+  moving_average_timeframe Int
 
   @@map("operation") 
   @@index([receipt_token_mint])
